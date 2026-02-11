@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎸 Rock Trivia - Multijugador</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #999;
+        }
+
+        .login-screen, .game-screen {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #ff0000;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+        }
+
+        .login-screen {
+            text-align: center;
+        }
+
+        .login-screen input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #666;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .login-screen button {
+            padding: 15px 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: #ff0000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-screen button:hover {
+            background: #cc0000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .info-box {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            padding: 15px 25px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .info-box .label {
+            font-size: 0.9em;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .info-box .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #ff0000;
+        }
+
+        .question-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .option {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .option:hover {
+            border-color: #ff0000;
+            background: linear-gradient(135deg, #3a0a0a 0%, #2a0a0a 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .option.correct {
+            background: linear-gradient(135deg, #0a3a0a 0%, #0a2a0a 100%);
+            border-color: #00ff00;
+            animation: pulse 0.5s;
+        }
+
+        .option.wrong {
+            background: linear-gradient(135deg, #3a0a0a 0%, #2a0a0a 100%);
+            border-color: #ff0000;
+            opacity: 0.5;
+        }
+
+        .option.disabled {
+            pointer-events: none;
+        }
+
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .leaderboard h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #ff0000;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            border-left: 3px solid #ff0000;
+        }
+
+        .leaderboard-item.me {
+            background: rgba(255, 0, 0, 0.2);
+            border-left-color: #ffff00;
+        }
+
+        .leaderboard-item .rank {
+            font-weight: bold;
+            color: #ff0000;
+            margin-right: 10px;
+        }
+
+        .leaderboard-item .name {
+            flex: 1;
+        }
+
+        .leaderboard-item .score {
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .winner-screen {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .winner-screen h2 {
+            font-size: 3em;
+            color: #ffff00;
+            margin-bottom: 20px;
+            animation: pulse 1s infinite;
+        }
+
+        .winner-screen .winner-name {
+            font-size: 2em;
+            color: #ff0000;
+            margin-bottom: 30px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .streak-indicator {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .streak-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .streak-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #333;
+            border: 2px solid #666;
+        }
+
+        .streak-dot.active {
+            background: #00ff00;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎸 ROCK TRIVIA 🎸</h1>
+            <div class="subtitle">5000+ preguntas de rock & metal legendario</div>
+        </div>
+
+        <!-- Pantalla de Login -->
+        <div id="loginScreen" class="login-screen">
+            <h2 style="margin-bottom: 30px;">Ingresa tu nombre de rockero</h2>
+            <input type="text" id="playerName" placeholder="Tu nombre..." maxlength="20">
+            <br>
+            <button onclick="joinGame()">¡ENTRAR AL JUEGO!</button>
+            <p style="margin-top: 20px; color: #999;">
+                🎯 Sé el primero en responder 6 preguntas seguidas correctamente<br>
+                ⚡ Máximo 666 jugadores simultáneos<br>
+                🎸 Más de 50 bandas legendarias
+            </p>
+        </div>
+
+        <!-- Pantalla de Juego -->
+        <div id="gameScreen" class="game-screen hidden">
+            <div class="game-info">
+                <div class="info-box">
+                    <div class="label">Jugador</div>
+                    <div class="value" id="currentPlayer">-</div>
+                </div>
+                <div class="info-box">
+                    <div class="label">Jugadores Online</div>
+                    <div class="value" id="playersCount">0</div>
+                </div>
+                <div class="info-box">
+                    <div class="label">Tu Racha</div>
+                    <div class="value" id="playerStreak">0</div>
+                </div>
+            </div>
+
+            <div class="streak-indicator">
+                <div style="color: #999; margin-bottom: 5px;">Progreso para ganar:</div>
+                <div class="streak-dots" id="streakDots">
+                    <div class="streak-dot"></div>
+                    <div class="streak-dot"></div>
+                    <div class="streak-dot"></div>
+                    <div class="streak-dot"></div>
+                    <div class="streak-dot"></div>
+                    <div class="streak-dot"></div>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-text" id="questionText">Cargando pregunta...</div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+
+            <div class="leaderboard">
+                <h3>🏆 RANKING ACTUAL 🏆</h3>
+                <div id="leaderboardContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions-database.js"></script>
+    <script>
+        // Estado del juego
+        let gameState = {
+            players: new Map(),
+            currentPlayer: null,
+            currentQuestion: null,
+            maxPlayers: 666,
+            usedQuestions: new Set()
+        };
+
+        function joinGame() {
+            const nameInput = document.getElementById('playerName');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Por favor ingresa tu nombre');
+                return;
+            }
+
+            if (gameState.players.size >= gameState.maxPlayers) {
+                alert('¡El juego está lleno! (666 jugadores máximo)');
+                return;
+            }
+
+            // Crear jugador
+            const playerId = 'player_' + Date.now() + '_' + Math.random();
+            gameState.currentPlayer = {
+                id: playerId,
+                name: name,
+                streak: 0
+            };
+
+            gameState.players.set(playerId, gameState.currentPlayer);
+
+            // Cambiar a pantalla de juego
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('currentPlayer').textContent = name;
+
+            updatePlayersCount();
+            loadNewQuestion();
+            updateLeaderboard();
+        }
+
+        function loadNewQuestion() {
+            // Resetear si ya usamos todas las preguntas
+            if (gameState.usedQuestions.size >= questions.length - 10) {
+                gameState.usedQuestions.clear();
+            }
+
+            // Seleccionar pregunta aleatoria no usada
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * questions.length);
+            } while (gameState.usedQuestions.has(randomIndex));
+
+            gameState.usedQuestions.add(randomIndex);
+            gameState.currentQuestion = { ...questions[randomIndex], selectedAnswer: null };
+
+            // Mostrar pregunta
+            document.getElementById('questionText').textContent = gameState.currentQuestion.q;
+
+            // Mostrar opciones
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            gameState.currentQuestion.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            updateStreakDisplay();
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (gameState.currentQuestion.selectedAnswer !== null) return;
+
+            gameState.currentQuestion.selectedAnswer = selectedIndex;
+            const correctAnswer = gameState.currentQuestion.answer;
+            const options = document.querySelectorAll('.option');
+
+            // Deshabilitar todas las opciones
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            // Marcar respuesta correcta e incorrecta
+            options[correctAnswer].classList.add('correct');
+            if (selectedIndex !== correctAnswer) {
+                options[selectedIndex].classList.add('wrong');
+            }
+
+            // Actualizar racha del jugador
+            if (selectedIndex === correctAnswer) {
+                gameState.currentPlayer.streak++;
+                
+                // Verificar si ganó
+                if (gameState.currentPlayer.streak >= 6) {
+                    setTimeout(() => showWinner(), 1500);
+                    return;
+                }
+            } else {
+                gameState.currentPlayer.streak = 0;
+            }
+
+            document.getElementById('playerStreak').textContent = gameState.currentPlayer.streak;
+            updateStreakDisplay();
+            updateLeaderboard();
+
+            // Simular que otros jugadores también están jugando
+            simulateOtherPlayers();
+
+            // Cargar nueva pregunta después de 2 segundos
+            setTimeout(() => loadNewQuestion(), 2000);
+        }
+
+        function updateStreakDisplay() {
+            const dots = document.querySelectorAll('.streak-dot');
+            dots.forEach((dot, index) => {
+                if (index < gameState.currentPlayer.streak) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function simulateOtherPlayers() {
+            // Simular entre 5 y 15 jugadores aleatorios
+            const numPlayers = Math.floor(Math.random() * 10) + 5;
+            
+            for (let i = 0; i < numPlayers; i++) {
+                if (gameState.players.size >= gameState.maxPlayers) break;
+                
+                const randomNames = ['RockGod', 'MetalHead', 'Shredder', 'Headbanger', 'Riff Master', 
+                                    'Drum Beast', 'Bass Slayer', 'Guitar Hero', 'Metal Warrior', 'Rock Legend',
+                                    'Axe Wielder', 'Thunder God', 'Speed Demon', 'Dark Lord', 'Iron Fist'];
+                const randomName = randomNames[Math.floor(Math.random() * randomNames.length)] + Math.floor(Math.random() * 1000);
+                const botId = 'bot_' + Date.now() + '_' + Math.random();
+                
+                // Dar racha aleatoria (más probable tener racha baja)
+                const randomStreak = Math.random() < 0.7 ? Math.floor(Math.random() * 3) : Math.floor(Math.random() * 5);
+                
+                gameState.players.set(botId, {
+                    id: botId,
+                    name: randomName,
+                    streak: randomStreak
+                });
+            }
+
+            updatePlayersCount();
+            updateLeaderboard();
+        }
+
+        function updatePlayersCount() {
+            document.getElementById('playersCount').textContent = gameState.players.size;
+        }
+
+        function updateLeaderboard() {
+            const leaderboard = Array.from(gameState.players.values())
+                .sort((a, b) => b.streak - a.streak)
+                .slice(0, 10);
+
+            const container = document.getElementById('leaderboardContainer');
+            container.innerHTML = '';
+
+            leaderboard.forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item' + (player.id === gameState.currentPlayer.id ? ' me' : '');
+                item.innerHTML = `
+                    <span class="rank">#${index + 1}</span>
+                    <span class="name">${player.name}</span>
+                    <span class="score">${player.streak}/6</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function showWinner() {
+            const questionContainer = document.querySelector('.question-container');
+            questionContainer.innerHTML = `
+                <div class="winner-screen">
+                    <h2>🏆 ¡GANADOR! 🏆</h2>
+                    <div class="winner-name">${gameState.currentPlayer.name}</div>
+                    <p style="font-size: 1.3em; margin-bottom: 30px;">
+                        ¡Has respondido 6 preguntas seguidas correctamente!<br>
+                        ¡Eres un verdadero maestro del Rock & Metal!
+                    </p>
+                    <button onclick="location.reload()" style="padding: 15px 40px; font-size: 1.2em; background: #ff0000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
+                        Jugar de nuevo
+                    </button>
+                </div>
+            `;
+        }
+
+        // Simular actividad inicial
+        setTimeout(() => {
+            if (gameState.currentPlayer) {
+                simulateOtherPlayers();
+            }
+        }, 1000);
+
+        // Simular que jugadores entran y salen periódicamente
+        setInterval(() => {
+            if (gameState.currentPlayer && gameState.players.size < gameState.maxPlayers) {
+                if (Math.random() < 0.3) {
+                    simulateOtherPlayers();
+                }
+            }
+            // Eliminar algunos jugadores bot aleatoriamente
+            const playersArray = Array.from(gameState.players.keys());
+            const botsToRemove = playersArray.filter(id => id.startsWith('bot_') && Math.random() < 0.1);
+            botsToRemove.forEach(id => gameState.players.delete(id));
+            
+            if (gameState.currentPlayer) {
+                updatePlayersCount();
+                updateLeaderboard();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
